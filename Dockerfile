@@ -8,10 +8,10 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
+COPY requirements.txt /app
 RUN pip3 install -r requirements.txt
 
 EXPOSE 8080
 
-COPY . ./
+COPY . /app
 ENTRYPOINT ["streamlit", "run", "QnA_App_PaLM.py", "--server.port=8080", "--server.address=0.0.0.0"]
