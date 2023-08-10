@@ -1,16 +1,26 @@
-FROM python:3.9-slim
+FROM python:3.8-slim
 
-WORKDIR /app
+RUN groupadd --gid 1000 appuser \
+    && useradd --uid 1000 --gid 1000 -ms /bin/bash appuser
+
+RUN pip3 install --no-cache-dir --upgrade \
+    pip \
+    virtualenv
 
 RUN apt-get update && apt-get install -y \
     build-essential \
-    curl \
-    software-properties-common \
-    && rm -rf /var/lib/apt/lists/*
+    software-properties-common
 
-COPY . ./
-RUN pip3 install -r requirements.txt --user
+USER appuser
+WORKDIR /home/appuser
+
+COPY . ./app
+
+ENV VIRTUAL_ENV=/home/appuser/venv
+RUN virtualenv ${VIRTUAL_ENV}
+RUN . ${VIRTUAL_ENV}/bin/activate && pip install -r app/requirements.txt
 
 EXPOSE 8080
 
-ENTRYPOINT ["streamlit", "run", "QnA_App_PaLM.py", "--server.port=8080", "--server.address=0.0.0.0"]
+COPY run.sh /home/appuser
+ENTRYPOINT ["./run.sh"]
